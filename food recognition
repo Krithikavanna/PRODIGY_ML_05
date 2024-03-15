@@ -1,0 +1,32 @@
+# Importing necessary libraries
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import layers, models
+
+# Assuming X_train, X_test, y_train, y_test are loaded with preprocessed image data and labels
+# X_train, X_test, y_train_food, y_train_calories, y_test_food, y_test_calories = ...
+
+# Define CNN architecture
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=X_train.shape[1:]),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(num_classes_food, activation='softmax'),  # num_classes_food: number of food categories
+    layers.Dense(1)  # Output layer for calorie estimation
+])
+
+# Compile the model
+model.compile(optimizer='adam',
+              loss=['sparse_categorical_crossentropy', 'mean_squared_error'],
+              metrics=['accuracy'])
+
+# Train the model
+model.fit(X_train, [y_train_food, y_train_calories], epochs=10, batch_size=32, validation_data=(X_test, [y_test_food, y_test_calories]))
+
+# Evaluate the model
+test_loss, test_accuracy_food, test_loss_calories, test_accuracy_calories = model.evaluate(X_test, [y_test_food, y_test_calories])
+print('Test food recognition accuracy:', test_accuracy_food)
+print('Test calorie estimation MAE:', test_loss_calories)
